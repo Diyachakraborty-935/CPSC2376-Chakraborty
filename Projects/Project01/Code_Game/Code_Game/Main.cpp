@@ -28,8 +28,8 @@ void displayBoard() {
     for (int r = 0; r < BOARD_SIZE; ++r) {
         std::cout << r % 10 << " ";
         for (int c = 0; c < BOARD_SIZE; ++c) {
-            if (board[r][c] == Cell::PLAYER_1) std::cout << "X ";
-            else if (board[r][c] == Cell::PLAYER_2) std::cout << "O ";
+            if (board[r][c] == Cell::PLAYER_1) std::cout << "R ";
+            else if (board[r][c] == Cell::PLAYER_2) std::cout << "B ";
             else std::cout << ". ";
         }
         std::cout << "\n";
@@ -72,12 +72,12 @@ void play() {
     while (gameState == GameState::ONGOING) {
         displayBoard();
         int row, col;
-        std::cout << "Player " << ((currentPlayer == Cell::PLAYER_1) ? "X" : "O") << "'s turn. Enter row and column: ";
+        std::cout << "Player " << ((currentPlayer == Cell::PLAYER_1) ? "R" : "B") << "'s turn. Enter row and column: ";
 
         while (!(std::cin >> row >> col) || !isValidMove(row, col)) {
             std::cin.clear();
             std::cin.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
-            std::cout << "Invalid input. Try again: ";
+            std::cout << "Illegal move. Try again: ";
         }
 
         board[row][col] = currentPlayer;
@@ -90,10 +90,10 @@ void play() {
 
     displayBoard();
     if (gameState == GameState::PLAYER_1_WINS) {
-        std::cout << "Player X wins!\n";
+        std::cout << "Congratulations! Player R wins!\n";
     }
     else if (gameState == GameState::PLAYER_2_WINS) {
-        std::cout << "Player O wins!\n";
+        std::cout << "Congratulations! Player B wins!\n";
     }
     else {
         std::cout << "It's a draw!\n";
@@ -105,7 +105,7 @@ int main() {
     while (true) {
         play();
         char choice;
-        std::cout << "Play again? (y/n): ";
+        std::cout << "Do you want to play again? (y/n): ";
         std::cin >> choice;
         if (choice != 'y' && choice != 'Y') break;
     }

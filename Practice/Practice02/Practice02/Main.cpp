@@ -2,7 +2,6 @@
 #include <fstream>
 #include <iomanip>
 #include <limits>
-
 void displayMenu() {
     std::cout << "\nMenu:\n";
     std::cout << "1. Check Balance\n";

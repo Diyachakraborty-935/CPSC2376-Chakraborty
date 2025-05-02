@@ -2,23 +2,29 @@
 #include <fstream>
 #include <vector>
 #include <memory>
+#include <string>
 #include <sstream>
 #include <iomanip>
 #include <cmath>
 
-// Define PI manually
-const double PI = 3.14159265358979323846;
+// Define M_PI if it's not available
+#ifndef M_PI
+#define M_PI 3.14159265358979323846
+#endif
 
-// Base class
+// Base abstract class
 class Shape {
 public:
     virtual double getArea() const = 0;
     virtual ~Shape() = default;
 };
 
-// Rectangle class
+// Rectangle derived class
 class Rectangle : public Shape {
-    double width, height;
+private:
+    double width;
+    double height;
+
 public:
     Rectangle(double w, double h) : width(w), height(h) {}
     double getArea() const override {
@@ -26,28 +32,30 @@ public:
     }
 };
 
-// Circle class
+// Circle derived class
 class Circle : public Shape {
+private:
     double radius;
+
 public:
     Circle(double r) : radius(r) {}
     double getArea() const override {
-        return PI * radius * radius;
+        return M_PI * radius * radius;
     }
 };
 
-// Function to print all areas
+// Function to print areas
 void printAllAreas(const std::vector<std::unique_ptr<Shape>>& shapes) {
-    std::cout << std::fixed << std::setprecision(4);
     for (const auto& shape : shapes) {
-        std::cout << "Area: " << shape->getArea() << std::endl;
+        std::cout << "Area: " << std::fixed << std::setprecision(4)
+            << shape->getArea() << std::endl;
     }
 }
 
 int main() {
     std::ifstream inputFile("shapes.txt");
     if (!inputFile) {
-        std::cerr << "Error: Could not open file 'shapes.txt'" << std::endl;
+        std::cerr << "Failed to open file.\n";
         return 1;
     }
 
@@ -56,16 +64,16 @@ int main() {
 
     while (std::getline(inputFile, line)) {
         std::istringstream iss(line);
-        std::string shapeType;
-        iss >> shapeType;
+        std::string type;
+        iss >> type;
 
-        if (shapeType == "rectangle") {
+        if (type == "rectangle") {
             double width, height;
             if (iss >> width >> height) {
                 shapes.push_back(std::make_unique<Rectangle>(width, height));
             }
         }
-        else if (shapeType == "circle") {
+        else if (type == "circle") {
             double radius;
             if (iss >> radius) {
                 shapes.push_back(std::make_unique<Circle>(radius));

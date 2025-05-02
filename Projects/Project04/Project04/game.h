@@ -2,39 +2,37 @@
 #ifndef GAME_H
 #define GAME_H
 
-#include <vector>
-#include <SDL.h>
-#include <SDL_mixer.h>
+#include <SDL2/SDL.h>
+#include <SDL2/SDL_mixer.h>
+
+#include <array>
 
 class Game {
 public:
-    enum Status { ONGOING, PLAYER_1_WINS, PLAYER_2_WINS, DRAW };
-    enum Player { PLAYER_1, PLAYER_2 };
-    enum Cell { EMPTY, PLAYER_1_BOX, PLAYER_2_BOX };
-
-    Game(int rows = 5, int cols = 5);
+    Game(SDL_Renderer* renderer);
     ~Game();
 
-    void play(int row, int col);
-    Status status() const;
-    void draw(SDL_Renderer* renderer) const;
-    void handleInput(const SDL_Event& e);
-    void reset();
+    void play();
 
 private:
-    void updateScore(int row, int col);
-    void togglePlayer();
+    enum class Player { None, Player1, Player2 };
+    enum class GameState { InProgress, Player1Wins, Player2Wins, Draw };
 
-    std::vector<std::vector<Cell>> board;
+    SDL_Renderer* renderer;
+    Mix_Chunk* clickSound;
+    Mix_Chunk* victorySound;
     Player currentPlayer;
-    int rows;
-    int cols;
-    int player1Score;
-    int player2Score;
+    GameState gameState;
+    std::array<std::array<Player, 3>, 3> grid;
 
-    Mix_Chunk* placeSound;
-    Mix_Chunk* winSound;
-    Mix_Chunk* drawSound;
+    void initialize();
+    void draw();
+    void handleInput();
+    void update();
+    void playSound(Mix_Chunk* sound);
+    void displayOutcome();
+    void restart();
+    void quit();
 };
 
 #endif // GAME_H

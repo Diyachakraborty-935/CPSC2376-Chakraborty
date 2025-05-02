@@ -1,84 +1,87 @@
-#include "game.h"
+#include "Game.h"
+#include <SDL2/SDL.h>
+#include <SDL2/SDL_mixer.h>
 
-Game::Game(int r, int c)
-    : rows(r), cols(c), player1Score(0), player2Score(0), currentPlayer(PLAYER_1) {
-    board = std::vector<std::vector<Cell>>(rows, std::vector<Cell>(cols, EMPTY));
-    placeSound = Mix_LoadWAV("place.wav");
-    winSound = Mix_LoadWAV("win.wav");
-    drawSound = Mix_LoadWAV("draw.wav");
+#include <iostream>
+
+Game::Game(SDL_Renderer* renderer)
+    : renderer(renderer), currentPlayer(Player::Player1), gameState(GameState::InProgress) {
+    clickSound = Mix_LoadWAV("assets/click.wav");
+    victorySound = Mix_LoadWAV("assets/victory.wav");
+    if (!clickSound || !victorySound) {
+        std::cerr << "Mix_LoadWAV Error: " << Mix_GetError() << std::endl;
+    }
+    initialize();
 }
 
 Game::~Game() {
-    Mix_FreeChunk(placeSound);
-    Mix_FreeChunk(winSound);
-    Mix_FreeChunk(drawSound);
+    if (clickSound) Mix_FreeChunk(clickSound);
+    if (victorySound) Mix_FreeChunk(victorySound);
 }
 
-void Game::play(int row, int col) {
-    if (row >= 0 && row < rows && col >= 0 && col < cols && board[row][col] == EMPTY) {
-        board[row][col] = (currentPlayer == PLAYER_1) ? PLAYER_1_BOX : PLAYER_2_BOX;
-        updateScore(row, col);
-        Mix_PlayChannel(-1, placeSound, 0);
-        togglePlayer();
+void Game::initialize() {
+    for (auto& row : grid) {
+        row.fill(Player::None);
     }
+    gameState = GameState::InProgress;
 }
 
-Game::Status Game::status() const {
-    if (player1Score + player2Score == rows * cols) {
-        if (player1Score > player2Score) return PLAYER_1_WINS;
-        if (player2Score > player1Score) return PLAYER_2_WINS;
-        return DRAW;
-    }
-    return ONGOING;
+void Game::draw() {
+    SDL_SetRenderDrawColor(renderer, 255, 255, 255, 255);
+    SDL_RenderClear(renderer);
+
+    // Draw grid and players' moves
+
+    SDL_RenderPresent(renderer);
 }
 
-void Game::draw(SDL_Renderer* renderer) const {
-    for (int i = 0; i < rows; ++i) {
-        for (int j = 0; j < cols; ++j) {
-            SDL_Rect cell = { j * 100, i * 100, 100, 100 };
-            switch (board[i][j]) {
-            case PLAYER_1_BOX:
-                SDL_SetRenderDrawColor(renderer, 255, 0, 0, 255);
-                break;
-            case PLAYER_2_BOX:
-                SDL_SetRenderDrawColor(renderer, 0, 0, 255, 255);
-                break;
-            case EMPTY:
-            default:
-                SDL_SetRenderDrawColor(renderer, 255, 255, 255, 255);
-                break;
+void Game::handleInput() {
+    SDL_Event event;
+    while (SDL_PollEvent(&event)) {
+        if (event.type == SDL_QUIT) {
+            quit();
+        }
+        else if (event.type == SDL_KEYDOWN) {
+            if (event.key.keysym.sym == SDLK_r) {
+                restart();
             }
-            SDL_RenderFillRect(renderer, &cell);
-            SDL_SetRenderDrawColor(renderer, 0, 0, 0, 255);
-            SDL_RenderDrawRect(renderer, &cell);
+            else if (event.key.keysym.sym == SDLK_ESCAPE) {
+                quit();
+            }
         }
     }
 }
 
-void Game::handleInput(const SDL_Event& e) {
-    if (e.type == SDL_KEYDOWN) {
-        if (e.key.keysym.sym == SDLK_r) {
-            reset();
-        }
+void Game::update() {
+    // Update game state
+    // Check for completed boxes and switch players
+}
+
+void Game::playSound(Mix_Chunk* sound) {
+    if (sound) {
+        Mix_PlayChannel(-1, sound, 0);
     }
 }
 
-void Game::reset() {
-    board = std::vector<std::vector<Cell>>(rows, std::vector<Cell>(cols, EMPTY));
-    currentPlayer = PLAYER_1;
-    player1Score = 0;
-    player2Score = 0;
+void Game::displayOutcome() {
+    // Display win/loss/draw message
+    playSound(victorySound);
 }
 
-void Game::updateScore(int row, int col) {
-    if (row > 0 && board[row - 1][col] != EMPTY && board[row - 1][col] == board[row][col]) {
-        (board[row][col] == PLAYER_1_BOX) ? ++player1Score : ++player2Score;
-    }
-    if (col > 0 && board[row][col - 1] != EMPTY && board[row][col - 1] == board[row][col]) {
-        (board[row][col] == PLAYER_1_BOX) ? ++player1Score : ++player2Score;
-    }
+void Game::restart() {
+    initialize();
 }
 
-void Game::togglePlayer() {
-    currentPlayer = (currentPlayer == PLAYER_1) ? PLAYER_2 : PLAYER_1;
+void Game::quit() {
+    SDL_Quit();
+    exit(0);
+}
+
+void Game::play() {
+    while (true) {
+        handleInput();
+        update();
+        draw();
+        SDL_Delay(100);
+    }
 }

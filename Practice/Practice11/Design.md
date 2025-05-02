@@ -1,78 +1,102 @@
-class Game {
+This program is a lightweight board game management system designed for a local board game café. It allows café staff to manage their collection of board games, track checkouts to customers, and log returns. The system keeps a record of each game, how many copies are in stock, and who currently has a copy. It enables basic operations such as viewing inventory, lending out games, and handling returns.
+Entities involved include board games, customers, and lending records. The system should be simple and functional, with an emphasis on usability in a real-world café setting.
+Key Nouns (Potential Classes or Attributes)
+• BoardGame
+• Customer
+• LendingRecord
+• Inventory
+• Copy
+• DueDate
+Key Verbs (Potential Methods)
+• CheckOut
+• ReturnGame
+• ViewAvailableGames
+• AddGame
+• RemoveGame
+• GetLendingStatus
+Class Design
+BoardGame Class
+class BoardGame {
 public:
     std::string title;
     int totalCopies;
     int availableCopies;
 
-    Game(std::string title, int totalCopies);
+    BoardGame(std::string t, int total);
 
     void addCopies(int count);
     void removeCopies(int count);
-    void displayInfo() const;
+    bool isAvailable() const;
 };
+Customer Class
 class Customer {
-    public:
-        std::string name;
-        std::string customerID;
-    
-        Customer(std::string name, std::string customerID);
-    };
-    class Loan {
-        public:
-            std::string customerID;
-            std::string gameTitle;
-            std::string dueDate;
-        
-            Loan(std::string customerID, std::string gameTitle, std::string dueDate);
-        };
-        class GameManager {
-            public:
-                void addGame(const Game& game);
-                void checkOutGame(const std::string& title, const Customer& customer, const std::string& dueDate);
-                void returnGame(const std::string& title, const Customer& customer);
-                void listAllGames() const;
-                void listLoans() const;
-            
-            private:
-                std::vector<Game> games;
-                std::vector<Loan> activeLoans;
-            };
-            classDiagram
-    class Game {
+public:
+    std::string name;
+    std::string customerId;
+
+    Customer(std::string n, std::string id);
+};
+LendingRecord Class
+class LendingRecord {
+public:
+    std::string customerId;
+    std::string gameTitle;
+    std::string dueDate;
+
+    LendingRecord(std::string cid, std::string title, std::string date);
+};
+LendingSystem Class
+class LendingSystem {
+public:
+    void addGame(std::string title, int copies);
+    void viewInventory() const;
+    bool checkOutGame(std::string gameTitle, std::string customerId, std::string dueDate);
+    bool returnGame(std::string gameTitle, std::string customerId);
+
+private:
+    std::vector<BoardGame> games;
+    std::vector<Customer> customers;
+    std::vector<LendingRecord> records;
+
+    BoardGame* findGame(const std::string& title);
+    LendingRecord* findRecord(const std::string& title, const std::string& customerId);
+};
+classDiagram
+    class BoardGame {
         +string title
         +int totalCopies
         +int availableCopies
-        +Game(string title, int totalCopies)
+        +BoardGame(string t, int total)
         +void addCopies(int count)
         +void removeCopies(int count)
-        +void displayInfo()
+        +bool isAvailable() const
     }
 
     class Customer {
         +string name
-        +string customerID
-        +Customer(string name, string customerID)
+        +string customerId
+        +Customer(string n, string id)
     }
 
-    class Loan {
-        +string customerID
+    class LendingRecord {
+        +string customerId
         +string gameTitle
         +string dueDate
-        +Loan(string customerID, string gameTitle, string dueDate)
+        +LendingRecord(string cid, string title, string date)
     }
 
-    class GameManager {
-        +void addGame(Game game)
-        +void checkOutGame(string title, Customer customer, string dueDate)
-        +void returnGame(string title, Customer customer)
-        +void listAllGames()
-        +void listLoans()
-        -vector~Game~ games
-        -vector~Loan~ activeLoans
+    class LendingSystem {
+        +void addGame(string title, int copies)
+        +void viewInventory() const
+        +bool checkOutGame(string gameTitle, string customerId, string dueDate)
+        +bool returnGame(string gameTitle, string customerId)
+        -vector~BoardGame~ games
+        -vector~Customer~ customers
+        -vector~LendingRecord~ records
+        -BoardGame* findGame(string title)
+        -LendingRecord* findRecord(string title, string customerId)
     }
 
-    GameManager --> Game : manages
-    GameManager --> Loan : tracks
-    GameManager --> Customer : interacts with
-    Loan --> Customer : linked to
-    Loan --> Game : refers to
+    LendingSystem --> BoardGame : has a
+    LendingSystem --> Customer : manages
+    LendingSystem --> LendingRecord : tracks
